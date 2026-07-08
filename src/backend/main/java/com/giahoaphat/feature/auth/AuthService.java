@@ -3,6 +3,9 @@ package com.giahoaphat.feature.auth;
 import com.giahoaphat.shared.dal.CustomerRepository;
 import com.giahoaphat.shared.model.Customer;
 import org.mindrot.jbcrypt.BCrypt;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.mail.SimpleMailMessage;
+import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -13,9 +16,17 @@ import java.util.Random;
 public class AuthService {
 
     private final CustomerRepository customerRepository;
+    private final JavaMailSender mailSender;
 
-    public AuthService(CustomerRepository customerRepository) {
+    @Value("${spring.mail.username}")
+    private String mailFrom;
+
+    @Value("${spring.mail.password}")
+    private String mailPassword;
+
+    public AuthService(CustomerRepository customerRepository, JavaMailSender mailSender) {
         this.customerRepository = customerRepository;
+        this.mailSender = mailSender;
     }
 
     @Transactional(readOnly = true)
@@ -112,5 +123,27 @@ public class AuthService {
     public boolean isEmailTaken(String email) {
         if (email == null || email.trim().isEmpty()) return false;
         return customerRepository.findByEmail(email.trim()).isPresent();
+    }
+
+    public void sendOTPEmail(String email, String otp) {
+        System.out.println("DEBUG MAIL SYSTEM CONFIG:");
+        System.out.println("  - spring.mail.username (mailFrom): " + mailFrom);
+        System.out.println("  - spring.mail.password (mailPassword): " + mailPassword);
+        try {
+            SimpleMailMessage message = new SimpleMailMessage();
+            message.setFrom(mailFrom != null ? mailFrom : "linhntn291104@gmail.com");
+            message.setTo(email.trim());
+            message.setSubject("[Gia Hòa Phát] Mã xác thực OTP");
+            message.setText("Chào bạn,\n\n"
+                    + "Mã xác thực OTP của bạn là: " + otp + "\n"
+                    + "Mã này có hiệu lực trong vòng 5 phút. Vui lòng không chia sẻ mã này với bất kỳ ai.\n\n"
+                    + "Trân trọng,\n"
+                    + "Gia Hòa Phát System");
+            mailSender.send(message);
+            System.out.println("OTP email sent successfully to " + email);
+        } catch (Exception e) {
+            System.err.println("Failed to send OTP email to " + email + ": " + e.getMessage());
+            e.printStackTrace();
+        }
     }
 }

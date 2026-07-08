@@ -14,10 +14,15 @@ import java.util.Optional;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
+import org.springframework.mail.javamail.JavaMailSender;
+
 public class AuthServiceTest {
 
     @Mock
     private CustomerRepository customerRepository;
+
+    @Mock
+    private JavaMailSender mailSender;
 
     @InjectMocks
     private AuthService authService;

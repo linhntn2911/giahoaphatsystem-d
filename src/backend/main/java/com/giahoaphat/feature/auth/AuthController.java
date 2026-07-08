@@ -91,6 +91,7 @@ public class AuthController {
 
         // Setup OTP
         String otp = authService.generateOTP();
+        authService.sendOTPEmail(request.getEmail(), otp);
         session.setAttribute("tempRegisterRequest", request);
         session.setAttribute("registerOTP", otp);
 
@@ -175,8 +176,11 @@ public class AuthController {
         try {
             authService.verifyForgotPasswordEmail(email);
             String otp = authService.generateOTP();
+            authService.sendOTPEmail(email, otp);
             session.setAttribute("forgotPasswordEmail", email);
             session.setAttribute("forgotPasswordOTP", otp);
+            session.setAttribute("forgotPasswordOTPCreatedAt", System.currentTimeMillis());
+            session.setAttribute("forgotPasswordOTPSentAt", System.currentTimeMillis());
             return "redirect:/forgot-password/verify";
         } catch (IllegalArgumentException e) {
             model.addAttribute("errorEmail", e.getMessage());
@@ -201,9 +205,15 @@ public class AuthController {
         
         String sessionEmail = (String) session.getAttribute("forgotPasswordEmail");
         String sessionOtp = (String) session.getAttribute("forgotPasswordOTP");
+        Long createdAt = (Long) session.getAttribute("forgotPasswordOTPCreatedAt");
 
         if (sessionEmail == null || sessionOtp == null) {
             return "redirect:/forgot-password";
+        }
+
+        if (createdAt == null || (System.currentTimeMillis() - createdAt) > 5 * 60 * 1000) {
+            model.addAttribute("error", "Mã OTP đã hết hạn (hiệu lực trong 5 phút). Vui lòng gửi lại mã.");
+            return "auth/forgot-password-verify";
         }
 
         if (otp == null || otp.trim().isEmpty()) {
@@ -218,6 +228,40 @@ public class AuthController {
 
         session.setAttribute("forgotPasswordVerified", true);
         return "redirect:/forgot-password/reset";
+    }
+
+    @PostMapping("/forgot-password/resend")
+    @ResponseBody
+    public java.util.Map<String, Object> resendForgotPasswordOtp(HttpSession session) {
+        java.util.Map<String, Object> response = new java.util.HashMap<>();
+        String email = (String) session.getAttribute("forgotPasswordEmail");
+        if (email == null) {
+            response.put("success", false);
+            response.put("message", "Phiên làm việc đã hết hạn. Vui lòng quay lại nhập email.");
+            return response;
+        }
+
+        Long lastSent = (Long) session.getAttribute("forgotPasswordOTPSentAt");
+        if (lastSent != null && (System.currentTimeMillis() - lastSent) < 60000) {
+            response.put("success", false);
+            response.put("message", "Vui lòng đợi 60 giây trước khi yêu cầu gửi lại.");
+            return response;
+        }
+
+        try {
+            String otp = authService.generateOTP();
+            authService.sendOTPEmail(email, otp);
+            session.setAttribute("forgotPasswordOTP", otp);
+            session.setAttribute("forgotPasswordOTPCreatedAt", System.currentTimeMillis());
+            session.setAttribute("forgotPasswordOTPSentAt", System.currentTimeMillis());
+            response.put("success", true);
+            response.put("message", "Đã gửi lại mã OTP mới.");
+            return response;
+        } catch (Exception e) {
+            response.put("success", false);
+            response.put("message", "Gửi lại mã OTP thất bại: " + e.getMessage());
+            return response;
+        }
     }
 
     @GetMapping("/forgot-password/reset")
