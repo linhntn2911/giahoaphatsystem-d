@@ -120,6 +120,123 @@ public class AuthController {
         return "auth/forgot-password";
     }
 
+    @PostMapping("/forgot-password")
+    public String processForgotPassword(
+            @RequestParam("email") String email,
+            HttpSession session,
+            Model model) {
+        
+        if (email == null || email.trim().isEmpty()) {
+            model.addAttribute("errorEmail", "Email không được để trống");
+            model.addAttribute("emailVal", email);
+            return "auth/forgot-password";
+        }
+
+        String emailRegex = "^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$";
+        if (!email.matches(emailRegex)) {
+            model.addAttribute("errorEmail", "Email không đúng định dạng");
+            model.addAttribute("emailVal", email);
+            return "auth/forgot-password";
+        }
+
+        try {
+            authService.verifyForgotPasswordEmail(email);
+            String otp = authService.generateOTP();
+            session.setAttribute("forgotPasswordEmail", email);
+            session.setAttribute("forgotPasswordOTP", otp);
+            return "redirect:/forgot-password/verify";
+        } catch (IllegalArgumentException e) {
+            model.addAttribute("errorEmail", e.getMessage());
+            model.addAttribute("emailVal", email);
+            return "auth/forgot-password";
+        }
+    }
+
+    @GetMapping("/forgot-password/verify")
+    public String showForgotPasswordVerifyForm(HttpSession session) {
+        if (session.getAttribute("forgotPasswordEmail") == null || session.getAttribute("forgotPasswordOTP") == null) {
+            return "redirect:/forgot-password";
+        }
+        return "auth/forgot-password-verify";
+    }
+
+    @PostMapping("/forgot-password/verify")
+    public String processForgotPasswordVerify(
+            @RequestParam("otp") String otp,
+            HttpSession session,
+            Model model) {
+        
+        String sessionEmail = (String) session.getAttribute("forgotPasswordEmail");
+        String sessionOtp = (String) session.getAttribute("forgotPasswordOTP");
+
+        if (sessionEmail == null || sessionOtp == null) {
+            return "redirect:/forgot-password";
+        }
+
+        if (otp == null || otp.trim().isEmpty()) {
+            model.addAttribute("error", "Mã OTP không được để trống.");
+            return "auth/forgot-password-verify";
+        }
+
+        if (!sessionOtp.equals(otp.trim())) {
+            model.addAttribute("error", "Mã xác thực OTP không chính xác.");
+            return "auth/forgot-password-verify";
+        }
+
+        session.setAttribute("forgotPasswordVerified", true);
+        return "redirect:/forgot-password/reset";
+    }
+
+    @GetMapping("/forgot-password/reset")
+    public String showForgotPasswordResetForm(HttpSession session) {
+        if (session.getAttribute("forgotPasswordEmail") == null || session.getAttribute("forgotPasswordVerified") == null) {
+            return "redirect:/forgot-password";
+        }
+        return "auth/forgot-password-reset";
+    }
+
+    @PostMapping("/forgot-password/reset")
+    public String processForgotPasswordReset(
+            @RequestParam("password") String password,
+            @RequestParam("confirmPassword") String confirmPassword,
+            HttpSession session,
+            Model model) {
+        
+        String sessionEmail = (String) session.getAttribute("forgotPasswordEmail");
+        Boolean verified = (Boolean) session.getAttribute("forgotPasswordVerified");
+
+        if (sessionEmail == null || verified == null || !verified) {
+            return "redirect:/forgot-password";
+        }
+
+        if (password == null || password.trim().isEmpty()) {
+            model.addAttribute("errorPassword", "Mật khẩu không được để trống.");
+            return "auth/forgot-password-reset";
+        }
+
+        if (password.length() < 6 || !password.matches("^(?=.*[A-Z])(?=.*[!@#$%^&*()_+\\-=\\[\\]{};':\"\\\\|,.<>\\/?]).*$")) {
+            model.addAttribute("errorPassword", "Mật khẩu phải từ 6 ký tự, gồm 1 chữ hoa và 1 ký tự đặc biệt.");
+            return "auth/forgot-password-reset";
+        }
+
+        if (!password.equals(confirmPassword)) {
+            model.addAttribute("errorConfirmPassword", "Mật khẩu xác nhận không khớp.");
+            return "auth/forgot-password-reset";
+        }
+
+        try {
+            authService.resetPassword(sessionEmail, password);
+            session.removeAttribute("forgotPasswordEmail");
+            session.removeAttribute("forgotPasswordOTP");
+            session.removeAttribute("forgotPasswordVerified");
+            model.addAttribute("successMessage", "Đổi mật khẩu thành công. Vui lòng đăng nhập.");
+            return "auth/login";
+        } catch (Exception e) {
+            model.addAttribute("error", e.getMessage());
+            return "auth/forgot-password-reset";
+        }
+    }
+
     @PostMapping("/login")
     public String processLogin(
             @RequestParam("usernameOrEmail") String usernameOrEmail,

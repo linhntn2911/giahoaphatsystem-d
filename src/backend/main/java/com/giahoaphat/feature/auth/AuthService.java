@@ -83,4 +83,22 @@ public class AuthService {
 
         return customer;
     }
+
+    @Transactional(readOnly = true)
+    public Customer verifyForgotPasswordEmail(String email) {
+        Optional<Customer> customerOpt = customerRepository.findByEmail(email);
+        if (customerOpt.isEmpty()) {
+            throw new IllegalArgumentException("Email không tồn tại trong hệ thống.");
+        }
+        return customerOpt.get();
+    }
+
+    @Transactional
+    public void resetPassword(String email, String newPassword) {
+        Customer customer = customerRepository.findByEmail(email)
+                .orElseThrow(() -> new IllegalArgumentException("Email không tồn tại trong hệ thống."));
+        String hashedPassword = BCrypt.hashpw(newPassword, BCrypt.gensalt(12));
+        customer.setPassword(hashedPassword);
+        customerRepository.save(customer);
+    }
 }

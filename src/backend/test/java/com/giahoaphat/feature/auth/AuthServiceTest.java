@@ -84,4 +84,42 @@ public class AuthServiceTest {
         );
         assertEquals("Tên đăng nhập hoặc mật khẩu không chính xác.", exception.getMessage());
     }
+
+    @Test
+    public void testVerifyForgotPasswordEmail_Success() {
+        String email = "test@gmail.com";
+        Customer mockCustomer = new Customer();
+        mockCustomer.setEmail(email);
+
+        when(customerRepository.findByEmail(email)).thenReturn(Optional.of(mockCustomer));
+
+        Customer result = authService.verifyForgotPasswordEmail(email);
+        assertNotNull(result);
+        assertEquals(email, result.getEmail());
+    }
+
+    @Test
+    public void testVerifyForgotPasswordEmail_Failure() {
+        String email = "notfound@gmail.com";
+        when(customerRepository.findByEmail(email)).thenReturn(Optional.empty());
+
+        Exception exception = assertThrows(IllegalArgumentException.class, () -> 
+            authService.verifyForgotPasswordEmail(email)
+        );
+        assertEquals("Email không tồn tại trong hệ thống.", exception.getMessage());
+    }
+
+    @Test
+    public void testResetPassword_Success() {
+        String email = "test@gmail.com";
+        Customer mockCustomer = new Customer();
+        mockCustomer.setEmail(email);
+        mockCustomer.setPassword("OldPassword123!");
+
+        when(customerRepository.findByEmail(email)).thenReturn(Optional.of(mockCustomer));
+        when(customerRepository.save(any(Customer.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        assertDoesNotThrow(() -> authService.resetPassword(email, "NewP@ssword123"));
+        assertTrue(BCrypt.checkpw("NewP@ssword123", mockCustomer.getPassword()));
+    }
 }
