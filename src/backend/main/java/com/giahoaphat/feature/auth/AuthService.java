@@ -101,4 +101,16 @@ public class AuthService {
         customer.setPassword(hashedPassword);
         customerRepository.save(customer);
     }
+
+    @Transactional(readOnly = true)
+    public boolean isUsernameTaken(String username) {
+        if (username == null || username.trim().isEmpty()) return false;
+        return customerRepository.findByUserName(username.trim()).isPresent();
+    }
+
+    @Transactional(readOnly = true)
+    public boolean isEmailTaken(String email) {
+        if (email == null || email.trim().isEmpty()) return false;
+        return customerRepository.findByEmail(email.trim()).isPresent();
+    }
 }

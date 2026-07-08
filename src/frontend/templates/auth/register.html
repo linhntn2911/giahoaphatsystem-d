@@ -152,7 +152,7 @@
     <div class="absolute top-0 right-0 -translate-y-1/2 translate-x-1/4 w-[600px] h-[600px] bg-primary-fixed opacity-20 rounded-full blur-[100px]"></div>
     <div class="absolute bottom-0 left-0 translate-y-1/2 -translate-x-1/4 w-[400px] h-[400px] bg-secondary-container opacity-20 rounded-full blur-[80px]"></div>
     
-    <div class="container-max px-margin-mobile md:px-margin-desktop grid grid-cols-1 lg:grid-cols-2 gap-gutter items-center mx-auto">
+    <div class="container-max px-margin-mobile md:px-margin-desktop grid grid-cols-1 lg:grid-cols-2 gap-gutter items-start pt-8 mx-auto">
         <!-- Branding/Visual Side -->
         <div class="hidden lg:flex flex-col gap-stack-md pr-12">
             <h1 class="font-display-lg text-display-lg text-primary">Bắt đầu hành trình ngọt ngào của bạn.</h1>
@@ -377,7 +377,7 @@
             validate: (val) => {
                 if (val.trim() === '') return 'Email không được để trống';
                 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-                return emailRegex.test(val) ? '' : 'Email không hợp lệ hoặc đã tồn tại';
+                return emailRegex.test(val) ? '' : 'Email không đúng định dạng';
             }
         },
         phone: {
@@ -416,12 +416,61 @@
         }
     };
 
+    let isUsernameDuplicate = false;
+    let isEmailDuplicate = false;
+    let checkUsernameTimeout = null;
+    let checkEmailTimeout = null;
+
+    function checkDuplicateUserName(val) {
+        clearTimeout(checkUsernameTimeout);
+        checkUsernameTimeout = setTimeout(() => {
+            fetch('/api/auth/check-username?username=' + encodeURIComponent(val))
+                .then(res => res.json())
+                .then(data => {
+                    if (document.getElementById('userName').value.trim() !== val.trim()) return;
+                    const field = fields.userName;
+                    if (data.exists) {
+                        isUsernameDuplicate = true;
+                        field.error.textContent = 'Tên đăng nhập đã tồn tại';
+                        field.input.classList.add('border-error', 'focus:ring-error', 'focus:border-error');
+                        field.input.classList.remove('border-outline-variant', 'focus:border-primary', 'focus:ring-primary');
+                    } else {
+                        isUsernameDuplicate = false;
+                    }
+                })
+                .catch(err => console.error(err));
+        }, 300);
+    }
+
+    function checkDuplicateEmail(val) {
+        clearTimeout(checkEmailTimeout);
+        checkEmailTimeout = setTimeout(() => {
+            fetch('/api/auth/check-email?email=' + encodeURIComponent(val))
+                .then(res => res.json())
+                .then(data => {
+                    if (document.getElementById('email').value.trim() !== val.trim()) return;
+                    const field = fields.email;
+                    if (data.exists) {
+                        isEmailDuplicate = true;
+                        field.error.textContent = 'Email đã được đăng ký trong hệ thống';
+                        field.input.classList.add('border-error', 'focus:ring-error', 'focus:border-error');
+                        field.input.classList.remove('border-outline-variant', 'focus:border-primary', 'focus:ring-primary');
+                    } else {
+                        isEmailDuplicate = false;
+                    }
+                })
+                .catch(err => console.error(err));
+        }, 300);
+    }
+
     function validateField(fieldName) {
         const field = fields[fieldName];
         const val = field.input.value;
         const errMsg = field.validate(val);
         
         if (errMsg) {
+            if (fieldName === 'userName') isUsernameDuplicate = false;
+            if (fieldName === 'email') isEmailDuplicate = false;
             field.error.textContent = errMsg;
             field.input.classList.add('border-error', 'focus:ring-error', 'focus:border-error');
             field.input.classList.remove('border-outline-variant', 'focus:border-primary', 'focus:ring-primary');
@@ -429,17 +478,25 @@
             field.error.textContent = '';
             field.input.classList.remove('border-error', 'focus:ring-error', 'focus:border-error');
             field.input.classList.add('border-outline-variant', 'focus:border-primary', 'focus:ring-primary');
+            
+            if (fieldName === 'userName') {
+                checkDuplicateUserName(val);
+            } else if (fieldName === 'email') {
+                checkDuplicateEmail(val);
+            }
         }
     }
 
-    // Attach event listeners for real-time validation as they type
+    // Attach event listeners for real-time validation as they type and blur
     Object.keys(fields).forEach(key => {
         fields[key].input.addEventListener('input', () => {
             validateField(key);
-            // Also validate confirmPassword if password is modified
             if (key === 'password' && fields.confirmPassword.input.value !== '') {
                 validateField('confirmPassword');
             }
+        });
+        fields[key].input.addEventListener('blur', () => {
+            validateField(key);
         });
     });
 
@@ -452,7 +509,7 @@
                 hasErrors = true;
             }
         });
-        if (hasErrors) {
+        if (hasErrors || isUsernameDuplicate || isEmailDuplicate) {
             e.preventDefault();
         }
     });

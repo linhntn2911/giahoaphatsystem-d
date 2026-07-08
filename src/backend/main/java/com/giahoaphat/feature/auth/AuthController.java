@@ -11,6 +11,8 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
+import org.springframework.web.bind.annotation.ResponseBody;
+
 @Controller
 public class AuthController {
 
@@ -18,6 +20,24 @@ public class AuthController {
 
     public AuthController(AuthService authService) {
         this.authService = authService;
+    }
+
+    @GetMapping("/api/auth/check-username")
+    @ResponseBody
+    public java.util.Map<String, Boolean> checkUsername(@RequestParam("username") String username) {
+        boolean exists = authService.isUsernameTaken(username);
+        java.util.Map<String, Boolean> response = new java.util.HashMap<>();
+        response.put("exists", exists);
+        return response;
+    }
+
+    @GetMapping("/api/auth/check-email")
+    @ResponseBody
+    public java.util.Map<String, Boolean> checkEmail(@RequestParam("email") String email) {
+        boolean exists = authService.isEmailTaken(email);
+        java.util.Map<String, Boolean> response = new java.util.HashMap<>();
+        response.put("exists", exists);
+        return response;
     }
 
     @GetMapping("/")
@@ -52,7 +72,20 @@ public class AuthController {
         try {
             authService.validateRegistration(request);
         } catch (IllegalArgumentException e) {
-            model.addAttribute("globalError", e.getMessage());
+            String message = e.getMessage();
+            if (message != null) {
+                if (message.contains("Email")) {
+                    result.rejectValue("email", "duplicate", message);
+                } else if (message.contains("Tên đăng nhập")) {
+                    result.rejectValue("userName", "duplicate", message);
+                } else if (message.contains("Mật khẩu")) {
+                    result.rejectValue("confirmPassword", "mismatch", message);
+                } else {
+                    model.addAttribute("globalError", message);
+                }
+            } else {
+                model.addAttribute("globalError", "Đăng ký không hợp lệ.");
+            }
             return "auth/register";
         }
 
