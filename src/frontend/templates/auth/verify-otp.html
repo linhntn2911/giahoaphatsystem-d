@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html class="light" lang="vi" style="overflow-x: hidden; position: relative;" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8">
+    <meta content="width=device-width, initial-scale=1.0" name="viewport">
+    <title>Xác thực OTP | Gia Hòa Phát</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&family=Work+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
+    
+    <!-- Tailwind Configuration -->
+    <script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "on-secondary-fixed": "#001b3d",
+                    "outline": "#837567",
+                    "tertiary-container": "#b2ab92",
+                    "primary": "#825516",
+                    "on-primary-fixed": "#2b1700",
+                    "surface-container-low": "#fbf2ed",
+                    "background": "#fff8f5",
+                    "secondary-fixed": "#d6e3ff",
+                    "on-secondary": "#ffffff",
+                    "on-tertiary-container": "#443f2c",
+                    "primary-container": "#d9a05b",
+                    "inverse-surface": "#34302c",
+                    "tertiary-fixed": "#ebe2c8",
+                    "inverse-on-surface": "#f8efea",
+                    "on-secondary-fixed-variant": "#2e476f",
+                    "secondary-fixed-dim": "#aec7f7",
+                    "on-surface-variant": "#504539",
+                    "primary-fixed-dim": "#f8bb73",
+                    "on-tertiary-fixed": "#1f1c0b",
+                    "surface-container-highest": "#e9e1dc",
+                    "secondary": "#465f88",
+                    "on-tertiary-fixed-variant": "#4c4733",
+                    "surface-tint": "#825516",
+                    "on-surface": "#1e1b18",
+                    "tertiary-fixed-dim": "#cec6ad",
+                    "on-error": "#ffffff",
+                    "surface-container-high": "#efe6e2",
+                    "outline-variant": "#d5c4b4",
+                    "surface-container": "#f5ece7",
+                    "on-error-container": "#93000a",
+                    "on-primary-container": "#5c3700",
+                    "on-primary": "#ffffff",
+                    "surface": "#fff8f5",
+                    "on-tertiary": "#ffffff",
+                    "surface-bright": "#fff8f5",
+                    "tertiary": "#645e49",
+                    "on-primary-fixed-variant": "#663e00",
+                    "error": "#ba1a1a",
+                    "surface-container-lowest": "#ffffff",
+                    "error-container": "#ffdad6",
+                    "secondary-container": "#b6d0ff",
+                    "surface-dim": "#e1d8d4",
+                    "primary-fixed": "#ffddb9",
+                    "surface-variant": "#e9e1dc",
+                    "on-background": "#1e1b18",
+                    "inverse-primary": "#f8bb73",
+                    "on-secondary-container": "#3f5881"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.5rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "stack-sm": "8px",
+                    "container-max": "1280px",
+                    "stack-lg": "32px",
+                    "margin-desktop": "64px",
+                    "unit": "8px",
+                    "stack-md": "16px",
+                    "margin-mobile": "20px",
+                    "gutter": "24px"
+            },
+            "fontFamily": {
+                    "headline": ["Plus Jakarta Sans"],
+                    "display": ["Plus Jakarta Sans"],
+                    "body": ["Work Sans"],
+                    "label": ["Work Sans"],
+                    "headline-md": ["Plus Jakarta Sans"],
+                    "label-md": ["Work Sans"],
+                    "display-lg": ["Plus Jakarta Sans"],
+                    "caption": ["Work Sans"],
+                    "headline-lg": ["Plus Jakarta Sans"],
+                    "body-lg": ["Work Sans"],
+                    "body-md": ["Work Sans"],
+                    "headline-lg-mobile": ["Plus Jakarta Sans"]
+            },
+            "fontSize": {
+                    "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+                    "label-md": ["14px", {"lineHeight": "20px", "fontWeight": "600"}],
+                    "display-lg": ["48px", {"lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                    "caption": ["12px", {"lineHeight": "16px", "fontWeight": "400"}],
+                    "headline-lg": ["32px", {"lineHeight": "40px", "fontWeight": "700"}],
+                    "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+                    "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                    "headline-lg-mobile": ["28px", {"lineHeight": "36px", "fontWeight": "700"}]
+            }
+          },
+        },
+      }
+    </script>
+    <style>
+        body {
+            font-family: 'Work Sans', sans-serif;
+            background-color: #fff8f5;
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(131, 117, 103, 0.1);
+        }
+    </style>
+</head>
+<body class="text-on-surface overflow-x-hidden">
+<!-- TopNavBar (Shared Component) -->
+<header class="fixed top-0 left-0 w-full z-50 bg-surface dark:bg-on-background shadow-sm">
+    <nav class="flex justify-between items-center w-full px-margin-desktop py-4 max-w-container-max mx-auto">
+        <div class="flex items-center gap-8">
+            <a class="text-headline-md font-headline-md font-bold text-primary dark:text-primary-fixed-dim" th:href="@{/}">Gia Hòa Phát</a>
+        </div>
+    </nav>
+</header>
+
+<!-- Main Content Area -->
+<main class="min-h-screen pt-32 pb-stack-lg flex items-center justify-center relative overflow-hidden">
+    <!-- Decorative Background Shapes -->
+    <div class="absolute top-0 right-0 -translate-y-1/2 translate-x-1/4 w-[600px] h-[600px] bg-primary-fixed opacity-20 rounded-full blur-[100px]"></div>
+    <div class="absolute bottom-0 left-0 translate-y-1/2 -translate-x-1/4 w-[400px] h-[400px] bg-secondary-container opacity-20 rounded-full blur-[80px]"></div>
+    
+    <div class="w-full max-w-md mx-auto px-4 z-10">
+        <div class="glass-card rounded-xl p-stack-lg shadow-level-1">
+            <div class="mb-stack-md text-center">
+                <h2 class="font-headline-lg text-headline-lg text-on-background mb-2">Xác thực OTP</h2>
+                <p class="text-body-md text-on-surface-variant">Một mã xác thực 6 chữ số đã được in ra Console hệ thống. Vui lòng kiểm tra và nhập vào ô dưới đây.</p>
+            </div>
+            
+            <form class="flex flex-col gap-4" th:action="@{/verify-otp}" method="post">
+                <!-- Error Message -->
+                <div th:if="${error}" class="flex items-start gap-2 p-3 bg-error-container/20 border-l-4 border-error rounded-r-lg">
+                    <span class="material-symbols-outlined text-error text-[20px]">error</span>
+                    <p th:text="${error}" class="text-caption font-caption text-on-error-container leading-tight">Mã OTP sai.</p>
+                </div>
+
+                <!-- OTP Input -->
+                <div class="flex flex-col gap-2">
+                    <label class="font-label-md text-label-md text-on-surface text-center" for="otp">Mã xác thực (OTP)</label>
+                    <input class="w-full text-center px-4 py-3 bg-tertiary/5 border border-outline-variant rounded-lg focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all text-headline-md tracking-[0.5em] font-bold" 
+                           id="otp" name="otp" placeholder="000000" type="text" maxlength="6" required autocomplete="off">
+                </div>
+
+                <!-- Verify Button -->
+                <button class="mt-2 w-full bg-primary text-on-primary font-label-md py-4 rounded-lg hover:opacity-90 hover:scale-[1.01] active:scale-95 transition-all shadow-md" type="submit">
+                    Xác nhận
+                </button>
+            </form>
+
+            <!-- Resend Link -->
+            <div class="mt-6 text-center">
+                <p class="text-body-md text-on-surface-variant">
+                    Không nhận được mã? 
+                    <span id="countdown-text" class="text-on-surface-variant">Gửi lại sau <span id="timer" class="font-bold">60</span>s</span>
+                    <a id="resend-link" class="text-primary font-bold hover:underline hidden" href="#">Gửi lại mã</a>
+                </p>
+            </div>
+        </div>
+    </div>
+</main>
+
+<script>
+    // Countdown Timer for OTP Resend
+    let timeLeft = 60;
+    const timerSpan = document.getElementById('timer');
+    const countdownText = document.getElementById('countdown-text');
+    const resendLink = document.getElementById('resend-link');
+
+    const countdownInterval = setInterval(() => {
+        timeLeft--;
+        timerSpan.textContent = timeLeft;
+        
+        if (timeLeft <= 0) {
+            clearInterval(countdownInterval);
+            countdownText.classList.add('hidden');
+            resendLink.classList.remove('hidden');
+        }
+    }, 1000);
+
+    // Fade-in animation
+    document.addEventListener('DOMContentLoaded', () => {
+        const card = document.querySelector('.glass-card');
+        card.style.opacity = '0';
+        card.style.transform = 'translateY(20px)';
+        card.style.transition = 'all 0.6s cubic-bezier(0.16, 1, 0.3, 1)';
+        
+        setTimeout(() => {
+            card.style.opacity = '1';
+            card.style.transform = 'translateY(0)';
+        }, 100);
+    });
+</script>
+</body>
+</html>
