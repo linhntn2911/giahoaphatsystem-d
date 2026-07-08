@@ -128,6 +128,20 @@
     <nav class="flex justify-between items-center w-full px-margin-desktop py-4 max-w-container-max mx-auto">
         <div class="flex items-center gap-8">
             <a class="text-headline-md font-headline-md font-bold text-primary dark:text-primary-fixed-dim" th:href="@{/}">Gia Hòa Phát</a>
+            <div class="hidden md:flex items-center gap-6">
+                <a class="text-on-surface-variant dark:text-surface-variant hover:text-primary transition-colors text-label-md font-label-md" href="#">Danh mục</a>
+                <a class="text-on-surface-variant dark:text-surface-variant hover:text-primary transition-colors text-label-md font-label-md" th:href="@{/}">Cửa hàng</a>
+                <a class="text-on-surface-variant dark:text-surface-variant hover:text-primary transition-colors text-label-md font-label-md" href="#">Về chúng tôi</a>
+            </div>
+        </div>
+        <div class="flex items-center gap-4">
+            <button class="p-2 hover:opacity-90 hover:scale-[1.02] transition-all text-primary">
+                <span class="material-symbols-outlined">shopping_cart</span>
+            </button>
+            <div class="hidden sm:flex gap-2">
+                <a class="px-4 py-2 text-on-surface-variant dark:text-surface-variant hover:text-primary transition-colors text-label-md font-label-md" th:href="@{/login}">Đăng nhập</a>
+                <a class="px-4 py-2 text-on-surface-variant dark:text-surface-variant hover:text-primary transition-colors text-label-md font-label-md" th:href="@{/register}">Đăng ký</a>
+            </div>
         </div>
     </nav>
 </header>
@@ -157,6 +171,7 @@
                     <label class="font-label-md text-label-md text-on-surface text-center" for="otp">Mã xác thực (OTP)</label>
                     <input class="w-full text-center px-4 py-3 bg-tertiary/5 border border-outline-variant rounded-lg focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all text-headline-md tracking-[0.5em] font-bold" 
                            id="otp" name="otp" placeholder="000000" type="text" maxlength="6" required autocomplete="off">
+                    <span id="error-otp" class="text-caption text-error font-caption mt-1 block text-center"></span>
                 </div>
 
                 <!-- Verify Button -->
@@ -194,6 +209,43 @@
             resendLink.classList.remove('hidden');
         }
     }, 1000);
+
+    // Live OTP Validation and Digit Blocking
+    const otpInput = document.getElementById('otp');
+    const errorOtp = document.getElementById('error-otp');
+    const form = document.querySelector('form');
+
+    function validateOtp() {
+        const val = otpInput.value.trim();
+        if (val === '') {
+            errorOtp.textContent = 'Mã OTP không được để trống';
+            otpInput.classList.add('border-error', 'focus:ring-error', 'focus:border-error');
+            otpInput.classList.remove('border-outline-variant', 'focus:border-primary', 'focus:ring-primary');
+            return false;
+        }
+        if (val.length !== 6 || isNaN(val)) {
+            errorOtp.textContent = 'Mã OTP phải chứa đúng 6 chữ số';
+            otpInput.classList.add('border-error', 'focus:ring-error', 'focus:border-error');
+            otpInput.classList.remove('border-outline-variant', 'focus:border-primary', 'focus:ring-primary');
+            return false;
+        }
+        errorOtp.textContent = '';
+        otpInput.classList.remove('border-error', 'focus:ring-error', 'focus:border-error');
+        otpInput.classList.add('border-outline-variant', 'focus:border-primary', 'focus:ring-primary');
+        return true;
+    }
+
+    otpInput.addEventListener('input', () => {
+        // Enforce digits only and block characters beyond 6 digits
+        otpInput.value = otpInput.value.replace(/[^0-9]/g, '').substring(0, 6);
+        validateOtp();
+    });
+
+    form.addEventListener('submit', (e) => {
+        if (!validateOtp()) {
+            e.preventDefault();
+        }
+    });
 
     // Fade-in animation
     document.addEventListener('DOMContentLoaded', () => {
