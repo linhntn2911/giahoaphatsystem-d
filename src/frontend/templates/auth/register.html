@@ -185,14 +185,14 @@
                             <input class="w-full px-4 py-3 bg-tertiary/5 border rounded-lg outline-none transition-all text-body-md" 
                                    th:classappend="${#fields.hasErrors('fullName')} ? 'border-error focus:ring-1 focus:ring-error focus:border-error' : 'border-outline-variant focus:border-primary focus:ring-1 focus:ring-primary'"
                                    id="fullName" th:field="*{fullName}" placeholder="Nguyễn Văn A" type="text" required>
-                            <span id="error-fullName" class="text-caption text-error font-caption mt-1 block" th:text="${#fields.hasErrors('fullName')} ? ${#fields.firstError('fullName')} : ''"></span>
+                            <span id="error-fullName" class="text-caption text-error font-caption mt-1 block" th:text="${#fields.hasErrors('fullName') ? #fields.errors('fullName')[0] : ''}"></span>
                         </div>
                         <div class="flex flex-col gap-2">
                             <label class="font-label-md text-label-md text-on-surface" for="userName">Tên đăng nhập</label>
                             <input class="w-full px-4 py-3 bg-tertiary/5 border rounded-lg outline-none transition-all text-body-md" 
                                    th:classappend="${#fields.hasErrors('userName')} ? 'border-error focus:ring-1 focus:ring-error focus:border-error' : 'border-outline-variant focus:border-primary focus:ring-1 focus:ring-primary'"
                                    id="userName" th:field="*{userName}" placeholder="username123" type="text" required>
-                            <span id="error-userName" class="text-caption text-error font-caption mt-1 block" th:text="${#fields.hasErrors('userName')} ? ${#fields.firstError('userName')} : ''"></span>
+                            <span id="error-userName" class="text-caption text-error font-caption mt-1 block" th:text="${#fields.hasErrors('userName') ? #fields.errors('userName')[0] : ''}"></span>
                         </div>
                     </div>
 
@@ -203,14 +203,14 @@
                             <input class="w-full px-4 py-3 bg-tertiary/5 border rounded-lg outline-none transition-all text-body-md" 
                                    th:classappend="${#fields.hasErrors('email')} ? 'border-error focus:ring-1 focus:ring-error focus:border-error' : 'border-outline-variant focus:border-primary focus:ring-1 focus:ring-primary'"
                                    id="email" th:field="*{email}" placeholder="example@ghp.vn" type="email" required>
-                            <span id="error-email" class="text-caption text-error font-caption mt-1 block" th:text="${#fields.hasErrors('email')} ? ${#fields.firstError('email')} : ''"></span>
+                            <span id="error-email" class="text-caption text-error font-caption mt-1 block" th:text="${#fields.hasErrors('email') ? #fields.errors('email')[0] : ''}"></span>
                         </div>
                         <div class="flex flex-col gap-2">
                             <label class="font-label-md text-label-md text-on-surface" for="phone">Số điện thoại</label>
                             <input class="w-full px-4 py-3 bg-tertiary/5 border rounded-lg outline-none transition-all text-body-md" 
                                    th:classappend="${#fields.hasErrors('phone')} ? 'border-error focus:ring-1 focus:ring-error focus:border-error' : 'border-outline-variant focus:border-primary focus:ring-1 focus:ring-primary'"
                                    id="phone" th:field="*{phone}" placeholder="0912345678" type="tel" required>
-                            <span id="error-phone" class="text-caption text-error font-caption mt-1 block" th:text="${#fields.hasErrors('phone')} ? ${#fields.firstError('phone')} : ''"></span>
+                            <span id="error-phone" class="text-caption text-error font-caption mt-1 block" th:text="${#fields.hasErrors('phone') ? #fields.errors('phone')[0] : ''}"></span>
                         </div>
                     </div>
 
@@ -220,7 +220,7 @@
                         <input class="w-full px-4 py-3 bg-tertiary/5 border rounded-lg outline-none transition-all text-body-md" 
                                th:classappend="${#fields.hasErrors('address')} ? 'border-error focus:ring-1 focus:ring-error focus:border-error' : 'border-outline-variant focus:border-primary focus:ring-1 focus:ring-primary'"
                                id="address" th:field="*{address}" placeholder="Số 123 Phố Thợ Bánh, Hà Nội" type="text" required>
-                        <span id="error-address" class="text-caption text-error font-caption mt-1 block" th:text="${#fields.hasErrors('address')} ? ${#fields.firstError('address')} : ''"></span>
+                        <span id="error-address" class="text-caption text-error font-caption mt-1 block" th:text="${#fields.hasErrors('address') ? #fields.errors('address')[0] : ''}"></span>
                     </div>
 
                     <!-- Row 3: Password & Confirm Password -->
@@ -235,7 +235,7 @@
                                     <span class="material-symbols-outlined text-[20px]">visibility</span>
                                 </button>
                             </div>
-                            <span id="error-password" class="text-caption text-error font-caption mt-1 block font-medium" th:text="${#fields.hasErrors('password')} ? ${#fields.firstError('password')} : ''"></span>
+                            <span id="error-password" class="text-caption text-error font-caption mt-1 block font-medium" th:text="${#fields.hasErrors('password') ? #fields.errors('password')[0] : ''}"></span>
                         </div>
                         <div class="flex flex-col gap-2">
                             <label class="font-label-md text-label-md text-on-surface" for="confirmPassword">Xác nhận mật khẩu</label>
@@ -247,7 +247,7 @@
                                     <span class="material-symbols-outlined text-[20px]">visibility</span>
                                 </button>
                             </div>
-                            <span id="error-confirmPassword" class="text-caption text-error font-caption mt-1 block" th:text="${#fields.hasErrors('confirmPassword')} ? ${#fields.firstError('confirmPassword')} : ''"></span>
+                            <span id="error-confirmPassword" class="text-caption text-error font-caption mt-1 block" th:text="${#fields.hasErrors('confirmPassword') ? #fields.errors('confirmPassword')[0] : ''}"></span>
                         </div>
                     </div>
 
@@ -416,61 +416,12 @@
         }
     };
 
-    let isUsernameDuplicate = false;
-    let isEmailDuplicate = false;
-    let checkUsernameTimeout = null;
-    let checkEmailTimeout = null;
-
-    function checkDuplicateUserName(val) {
-        clearTimeout(checkUsernameTimeout);
-        checkUsernameTimeout = setTimeout(() => {
-            fetch('/api/auth/check-username?username=' + encodeURIComponent(val))
-                .then(res => res.json())
-                .then(data => {
-                    if (document.getElementById('userName').value.trim() !== val.trim()) return;
-                    const field = fields.userName;
-                    if (data.exists) {
-                        isUsernameDuplicate = true;
-                        field.error.textContent = 'Tên đăng nhập đã tồn tại';
-                        field.input.classList.add('border-error', 'focus:ring-error', 'focus:border-error');
-                        field.input.classList.remove('border-outline-variant', 'focus:border-primary', 'focus:ring-primary');
-                    } else {
-                        isUsernameDuplicate = false;
-                    }
-                })
-                .catch(err => console.error(err));
-        }, 300);
-    }
-
-    function checkDuplicateEmail(val) {
-        clearTimeout(checkEmailTimeout);
-        checkEmailTimeout = setTimeout(() => {
-            fetch('/api/auth/check-email?email=' + encodeURIComponent(val))
-                .then(res => res.json())
-                .then(data => {
-                    if (document.getElementById('email').value.trim() !== val.trim()) return;
-                    const field = fields.email;
-                    if (data.exists) {
-                        isEmailDuplicate = true;
-                        field.error.textContent = 'Email đã được đăng ký trong hệ thống';
-                        field.input.classList.add('border-error', 'focus:ring-error', 'focus:border-error');
-                        field.input.classList.remove('border-outline-variant', 'focus:border-primary', 'focus:ring-primary');
-                    } else {
-                        isEmailDuplicate = false;
-                    }
-                })
-                .catch(err => console.error(err));
-        }, 300);
-    }
-
     function validateField(fieldName) {
         const field = fields[fieldName];
         const val = field.input.value;
         const errMsg = field.validate(val);
         
         if (errMsg) {
-            if (fieldName === 'userName') isUsernameDuplicate = false;
-            if (fieldName === 'email') isEmailDuplicate = false;
             field.error.textContent = errMsg;
             field.input.classList.add('border-error', 'focus:ring-error', 'focus:border-error');
             field.input.classList.remove('border-outline-variant', 'focus:border-primary', 'focus:ring-primary');
@@ -478,12 +429,6 @@
             field.error.textContent = '';
             field.input.classList.remove('border-error', 'focus:ring-error', 'focus:border-error');
             field.input.classList.add('border-outline-variant', 'focus:border-primary', 'focus:ring-primary');
-            
-            if (fieldName === 'userName') {
-                checkDuplicateUserName(val);
-            } else if (fieldName === 'email') {
-                checkDuplicateEmail(val);
-            }
         }
     }
 
@@ -509,7 +454,7 @@
                 hasErrors = true;
             }
         });
-        if (hasErrors || isUsernameDuplicate || isEmailDuplicate) {
+        if (hasErrors) {
             e.preventDefault();
         }
     });
